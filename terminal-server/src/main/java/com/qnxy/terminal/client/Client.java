@@ -5,12 +5,16 @@ import com.qnxy.terminal.message.ServerMessage;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
+
 /**
  * @author Qnxy
  */
 public interface Client {
 
     Mono<Void> close();
+
+    void registerReadIdle(Duration idle);
 
     boolean isConnected();
 

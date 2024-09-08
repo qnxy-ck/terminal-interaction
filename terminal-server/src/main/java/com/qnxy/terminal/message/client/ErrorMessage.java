@@ -1,6 +1,6 @@
 package com.qnxy.terminal.message.client;
 
-import com.qnxy.terminal.api.ErrorCode;
+import com.qnxy.terminal.api.data.ErrorCode;
 import io.netty.buffer.ByteBuf;
 
 /**

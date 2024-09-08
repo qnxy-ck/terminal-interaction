@@ -6,6 +6,8 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import reactor.core.publisher.Mono;
 
+import static com.qnxy.terminal.message.ServerMessageType.AUTHORIZED_MOVE_OUT_GOODS;
+
 /**
  * 授权出货消息
  *
@@ -18,11 +20,10 @@ public record AuthorizedMoveOutGoodsMessage(
         boolean readTags
 ) implements ServerMessage {
 
-    private static final byte INSTRUCTION_CODE = 'F';
 
     @Override
     public Mono<ByteBuf> encode(ByteBufAllocator byteBufAllocator) {
-        return this.simpleByteBuf(byteBufAllocator, INSTRUCTION_CODE, byteBuf -> {
+        return this.simpleByteBuf(byteBufAllocator, AUTHORIZED_MOVE_OUT_GOODS, byteBuf -> {
             byteBuf.writeByte(this.cargoLocation);
             byteBuf.writeBoolean(this.readTags);
         });

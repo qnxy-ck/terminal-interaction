@@ -14,15 +14,15 @@ public interface ServerMessage {
     Mono<ByteBuf> encode(ByteBufAllocator byteBufAllocator);
 
 
-    default Mono<ByteBuf> simpleByteBuf(ByteBufAllocator byteBufAllocator, byte instructionCode) {
-        return Mono.fromSupplier(() -> byteBufAllocator.ioBuffer(1).writeByte(instructionCode));
+    default Mono<ByteBuf> simpleByteBuf(ByteBufAllocator byteBufAllocator, ServerMessageType serverMessageType) {
+        return Mono.fromSupplier(() -> byteBufAllocator.ioBuffer(1).writeByte(serverMessageType.getInstructionCode()));
     }
-    
-    default Mono<ByteBuf> simpleByteBuf(ByteBufAllocator byteBufAllocator, byte instructionCode, Consumer<ByteBuf> consumer) {
+
+    default Mono<ByteBuf> simpleByteBuf(ByteBufAllocator byteBufAllocator, ServerMessageType serverMessageType, Consumer<ByteBuf> consumer) {
         return Mono.fromSupplier(() -> {
             final ByteBuf byteBuf = byteBufAllocator.ioBuffer();
-            
-            byteBuf.writeByte(instructionCode);
+
+            byteBuf.writeByte(serverMessageType.getInstructionCode());
             consumer.accept(byteBuf);
             return byteBuf;
         });

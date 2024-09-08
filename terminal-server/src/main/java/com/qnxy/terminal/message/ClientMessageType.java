@@ -3,7 +3,6 @@ package com.qnxy.terminal.message;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Arrays;
-import java.util.Optional;
 
 /**
  * @author Qnxy
@@ -11,9 +10,12 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public enum ClientMessageType {
 
-
-    AUTHENTICATION('A'),
+    CONNECT_AUTHENTICATION('A'),
     HEARTBEAT('P'),
+    AUTHORIZED_MOVE_OUT_GOODS_RECEIPT('M'),
+    ADJUSTMENT_SUCCESSFUL('S'),
+    SWIPE_CARD('c'),
+    ERROR_MESSAGE('E')
     ;
 
 
@@ -25,5 +27,5 @@ public enum ClientMessageType {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Invalid message type: " + b));
     }
-    
+
 }

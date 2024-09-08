@@ -30,6 +30,11 @@ public enum ServerErrorMessage implements ServerMessage {
      * 刷卡信息查询失败错误
      */
     CARD_INFORMATION_QUERY_ERROR_FAILED,
+
+    /**
+     * 心跳超时
+     */
+    HEARTBEAT_TIMEOUT_ERROR,
     ;
 
 

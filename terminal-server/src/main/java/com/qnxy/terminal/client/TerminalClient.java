@@ -1,14 +1,16 @@
 package com.qnxy.terminal.client;
 
+import com.qnxy.terminal.ClientManager;
 import com.qnxy.terminal.ClientMessageProcessorFactory;
 import com.qnxy.terminal.ServerConfiguration;
 import com.qnxy.terminal.UnauthenticatedException;
+import com.qnxy.terminal.api.TerminalExternalService;
 import com.qnxy.terminal.message.ClientMessage;
 import com.qnxy.terminal.message.ClientMessageDecoder;
 import com.qnxy.terminal.message.ServerErrorMessage;
 import com.qnxy.terminal.message.ServerMessage;
-import com.qnxy.terminal.message.client.Authentication;
 import com.qnxy.terminal.message.client.CompleteMessage;
+import com.qnxy.terminal.message.client.ConnectAuthentication;
 import com.qnxy.terminal.message.client.ProactiveMessages;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
@@ -21,6 +23,8 @@ import reactor.core.publisher.Sinks;
 import reactor.netty.Connection;
 import reactor.util.concurrent.Queues;
 
+import java.time.Duration;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -44,21 +48,23 @@ public class TerminalClient implements Client {
     private final Queue<FluxSink<ClientMessage>> exchangeQueue = Queues.<FluxSink<ClientMessage>>get(Queues.SMALL_BUFFER_SIZE).get();
     private final ByteBufAllocator byteBufAllocator;
     private final ClientContext clientContext;
+    private final TerminalExternalService terminalExternalService;
 
 
     private Disposable tcpDelayCloseDisposable;
     private volatile FluxSink<ClientMessage> sink;
 
 
-    public TerminalClient(Connection connection, ServerConfiguration configuration) {
+    public TerminalClient(Connection connection, ServerConfiguration configuration, TerminalExternalService terminalExternalService) {
         this.connection = connection;
         this.configuration = configuration;
+        this.terminalExternalService = terminalExternalService;
         this.byteBufAllocator = connection.outbound().alloc();
         this.clientContext = new ClientContext(isAuth);
 
+        connection.onDispose(() -> ClientManager.removeClient(clientContext.getTerminalId()));
         connection.addHandlerLast(new LengthFieldBasedFrameDecoder(Short.MAX_VALUE, 0, Short.BYTES, 0, 3));
-
-        this.registerTcpDelayedClose();
+        this.clientDelayedClose();
 
         connection.inbound()
                 .receive()
@@ -77,7 +83,12 @@ public class TerminalClient implements Client {
     }
 
 
-    private void registerTcpDelayedClose() {
+    /**
+     * 客户端延迟关闭
+     * <p>
+     * 在达到配置最大授权时间后 仍未被取消则关闭当前客户端
+     */
+    private void clientDelayedClose() {
         this.tcpDelayCloseDisposable = Mono.defer(() -> {
                     this.send(ServerErrorMessage.MAXIMUM_AUTHORIZATION_WAIT_ERROR);
                     return this.close();
@@ -88,7 +99,7 @@ public class TerminalClient implements Client {
 
 
     private Mono<Void> dispatcherProcessor(ClientMessage message) {
-        if (!isAuth.get() && !(message instanceof Authentication)) {
+        if (!isAuth.get() && !(message instanceof ConnectAuthentication)) {
             // 未认证并且当前消息不为认证消息
             // 抛出未认证异常
             return Mono.error(new UnauthenticatedException());
@@ -102,7 +113,10 @@ public class TerminalClient implements Client {
             }
 
             return ClientMessageProcessorFactory.doHandle(proactiveMessages, this)
-                    .contextWrite(ctx -> ctx.put(ClientContext.class, this.clientContext));
+                    .contextWrite(ctx -> ctx.putAllMap(Map.of(
+                            ClientContext.class, this.clientContext,
+                            TerminalExternalService.class, this.terminalExternalService
+                    )));
         }
 
         if (this.sink == null && !this.nextExchangeQueueValue()) {
@@ -121,7 +135,7 @@ public class TerminalClient implements Client {
             this.nextExchangeQueueValue();
         }
 
-        return Mono.empty();
+        return Mono.error(new RuntimeException("收到意外的消息: " + message));
     }
 
     public boolean nextExchangeQueueValue() {
@@ -143,6 +157,14 @@ public class TerminalClient implements Client {
 
             log.info("该客户端已经被关闭.");
             return Mono.empty();
+        });
+    }
+
+    @Override
+    public void registerReadIdle(Duration idle) {
+        this.connection.onReadIdle(idle.toMillis(), () -> {
+            this.send(ServerErrorMessage.HEARTBEAT_TIMEOUT_ERROR);
+            this.close().subscribe();
         });
     }
 
@@ -174,23 +196,24 @@ public class TerminalClient implements Client {
     @Override
     public Flux<ClientMessage> exchange(ServerMessage message) {
         return Flux.<ClientMessage>create(sink -> {
-            if (!this.isConnected()) {
-                sink.error(new RuntimeException("连接已关闭, 无法发送消息"));
-            }
+                    if (!this.isConnected()) {
+                        sink.error(new RuntimeException("连接已关闭, 无法发送消息"));
+                    }
 
-            try {
-                this.lock.lock();
-                if (this.exchangeQueue.offer(sink)) {
-                    this.requestSink.emitNext(message, Sinks.EmitFailureHandler.FAIL_FAST);
-                } else {
-                    sink.error(new RuntimeException("请求队列已达到上限."));
-                }
-            } catch (Exception e) {
-                sink.error(e);
-            } finally {
-                this.lock.unlock();
-            }
-        });
+                    try {
+                        this.lock.lock();
+                        if (this.exchangeQueue.offer(sink)) {
+                            this.requestSink.emitNext(message, Sinks.EmitFailureHandler.FAIL_FAST);
+                        } else {
+                            sink.error(new RuntimeException("请求队列已达到上限."));
+                        }
+                    } catch (Exception e) {
+                        sink.error(e);
+                    } finally {
+                        this.lock.unlock();
+                    }
+                })
+                .timeout(this.clientContext.getMaxWaitMoveOutGoodsTime());
     }
 
 

@@ -23,7 +23,7 @@ public final class ClientManager {
     }
 
     public static void removeClient(Long id) {
-        clients.remove(id);
+        Optional.ofNullable(id).ifPresent(client -> clients.remove(id));
     }
 
 

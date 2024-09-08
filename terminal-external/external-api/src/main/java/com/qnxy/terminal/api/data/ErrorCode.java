@@ -1,4 +1,4 @@
-package com.qnxy.terminal.api;
+package com.qnxy.terminal.api.data;
 
 import java.util.Arrays;
 import java.util.Optional;

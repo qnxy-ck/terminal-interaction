@@ -1,6 +1,6 @@
 package com.qnxy.terminal.message.client;
 
-import com.qnxy.terminal.api.SwipeCardMethod;
+import com.qnxy.terminal.api.data.SwipeCardMethod;
 import io.netty.buffer.ByteBuf;
 
 import java.nio.charset.StandardCharsets;

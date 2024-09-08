@@ -1,8 +1,5 @@
 package com.qnxy.terminal.api.data;
 
-import com.qnxy.terminal.api.ErrorCode;
-import com.qnxy.terminal.api.GoodsTagsType;
-
 /**
  * @param errorCodes      错误码数组, 如果没有发生错误则为空
  * @param transactionCode 货物交易码

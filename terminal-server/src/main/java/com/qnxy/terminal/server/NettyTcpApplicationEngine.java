@@ -2,6 +2,7 @@ package com.qnxy.terminal.server;
 
 import com.qnxy.terminal.ApplicationEngine;
 import com.qnxy.terminal.ServerConfiguration;
+import com.qnxy.terminal.api.TerminalExternalService;
 import com.qnxy.terminal.client.TerminalClient;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Sinks;
@@ -21,7 +22,7 @@ public class NettyTcpApplicationEngine implements ApplicationEngine {
     public void start(boolean wait) {
 
         TcpServer.create()
-                .doOnConnection(it -> new TerminalClient(it, configuration))
+                .doOnConnection(it -> new TerminalClient(it, configuration, TerminalExternalService.INSTANCE))
                 .port(configuration.port())
                 .bind()
                 .subscribe(it -> Runtime.getRuntime().addShutdownHook(new Thread(it::dispose)));

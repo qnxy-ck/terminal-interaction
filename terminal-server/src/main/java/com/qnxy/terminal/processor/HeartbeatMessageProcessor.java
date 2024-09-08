@@ -4,7 +4,7 @@ import com.qnxy.terminal.ClientMessageProcessor;
 import com.qnxy.terminal.client.Client;
 import com.qnxy.terminal.client.ClientContext;
 import com.qnxy.terminal.message.client.Heartbeat;
-import com.qnxy.terminal.message.server.SuccessfulMessage;
+import com.qnxy.terminal.message.server.Successful;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
@@ -22,7 +22,7 @@ public class HeartbeatMessageProcessor implements ClientMessageProcessor<Heartbe
             final Long terminalId = ctx.get(ClientContext.class).getTerminalId();
             log.debug("terminalId: {} -> {}", terminalId, message);
 
-            client.send(SuccessfulMessage.INSTANCE);
+            client.send(Successful.INSTANCE);
             return Mono.empty();
         });
     }

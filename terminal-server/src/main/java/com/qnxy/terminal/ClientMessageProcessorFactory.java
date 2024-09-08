@@ -1,7 +1,7 @@
 package com.qnxy.terminal;
 
 import com.qnxy.terminal.client.Client;
-import com.qnxy.terminal.message.client.Authentication;
+import com.qnxy.terminal.message.client.ConnectAuthentication;
 import com.qnxy.terminal.message.client.Heartbeat;
 import com.qnxy.terminal.message.client.ProactiveMessages;
 import com.qnxy.terminal.message.client.SwipeCard;
@@ -23,7 +23,7 @@ public final class ClientMessageProcessorFactory {
 
     static {
         processors.put(Heartbeat.class, new HeartbeatMessageProcessor());
-        processors.put(Authentication.class, new AuthenticationMessageProcessor());
+        processors.put(ConnectAuthentication.class, new AuthenticationMessageProcessor());
         processors.put(SwipeCard.class, new SwipeCardMessageProcessor());
     }
 
