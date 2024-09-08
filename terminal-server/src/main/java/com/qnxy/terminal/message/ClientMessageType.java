@@ -15,8 +15,7 @@ public enum ClientMessageType {
     AUTHORIZED_MOVE_OUT_GOODS_RECEIPT('M'),
     ADJUSTMENT_SUCCESSFUL('S'),
     SWIPE_CARD('c'),
-    ERROR_MESSAGE('E')
-    ;
+    ERROR_MESSAGE('E');
 
 
     private final char instructionCode;

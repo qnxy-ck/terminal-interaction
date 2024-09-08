@@ -18,7 +18,7 @@ public record ErrorMessage(
         for (byte i = 0; i < errorCount; i++) {
             final ErrorCode errorCode = ErrorCode.errCodeOf(buffer.readByte())
                     .orElseThrow(() -> new RuntimeException("不存在的错误编码"));
-            
+
             errorCodes[i] = errorCode;
         }
 

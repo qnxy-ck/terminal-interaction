@@ -21,19 +21,19 @@ public record AuthorizedMoveOutGoodsMessage(
 ) implements ServerMessage {
 
 
+    public static AuthorizedMoveOutGoodsMessage withSwipeCardResp(SwipeCardResp swipeCardResp) {
+        return new AuthorizedMoveOutGoodsMessage(
+                swipeCardResp.cargoLocation(),
+                swipeCardResp.readTags()
+        );
+    }
+
     @Override
     public Mono<ByteBuf> encode(ByteBufAllocator byteBufAllocator) {
         return this.simpleByteBuf(byteBufAllocator, AUTHORIZED_MOVE_OUT_GOODS, byteBuf -> {
             byteBuf.writeByte(this.cargoLocation);
             byteBuf.writeBoolean(this.readTags);
         });
-    }
-
-    public static AuthorizedMoveOutGoodsMessage withSwipeCardResp(SwipeCardResp swipeCardResp) {
-        return new AuthorizedMoveOutGoodsMessage(
-                swipeCardResp.cargoLocation(),
-                swipeCardResp.readTags()
-        );
     }
 
 }

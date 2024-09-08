@@ -1,7 +1,6 @@
 package com.qnxy.terminal.client;
 
 import com.qnxy.terminal.ClientManager;
-import com.qnxy.terminal.ClientMessageProcessorFactory;
 import com.qnxy.terminal.ServerConfiguration;
 import com.qnxy.terminal.UnauthenticatedException;
 import com.qnxy.terminal.api.TerminalExternalService;
@@ -112,7 +111,7 @@ public class TerminalClient implements Client {
                 return Mono.error(new RuntimeException("收到不符合预期的消息: " + proactiveMessages));
             }
 
-            return ClientMessageProcessorFactory.doHandle(proactiveMessages, this)
+            return proactiveMessages.handle(this)
                     .contextWrite(ctx -> ctx.putAllMap(Map.of(
                             ClientContext.class, this.clientContext,
                             TerminalExternalService.class, this.terminalExternalService

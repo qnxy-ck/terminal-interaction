@@ -15,7 +15,7 @@ public class TerminalServer {
                 9900,
                 Duration.ofSeconds(10)
         );
-        
+
         new NettyTcpApplicationEngine(configuration).start(true);
 
     }
