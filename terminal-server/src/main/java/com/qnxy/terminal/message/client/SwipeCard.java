@@ -3,14 +3,16 @@ package com.qnxy.terminal.message.client;
 import com.qnxy.terminal.CallingFlow;
 import com.qnxy.terminal.api.TerminalExternalService;
 import com.qnxy.terminal.api.data.SwipeCardMethod;
-import com.qnxy.terminal.client.Client;
 import com.qnxy.terminal.client.ClientContext;
+import com.qnxy.terminal.client.TerminalClient;
 import com.qnxy.terminal.message.ServerErrorMessage;
 import io.netty.buffer.ByteBuf;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 
 import static com.qnxy.terminal.message.server.AuthorizedMoveOutGoodsMessage.withSwipeCardResp;
 
@@ -21,7 +23,7 @@ import static com.qnxy.terminal.message.server.AuthorizedMoveOutGoodsMessage.wit
 public record SwipeCard(
         SwipeCardMethod swipeCardMethod,
         String cardCode
-) implements ProactiveMessages {
+) implements ProactiveSyncMessages {
 
     public static SwipeCard decode(ByteBuf buffer) {
         final byte typeNumber = buffer.readByte();
@@ -36,7 +38,7 @@ public record SwipeCard(
     }
 
     @Override
-    public Mono<Void> handle(Client client) {
+    public Mono<Void> handle(TerminalClient terminalClient) {
         return Mono.deferContextual(ctx -> {
             final Long terminalId = ctx.get(ClientContext.class).getTerminalId();
             final TerminalExternalService terminalExternalService = ctx.get(TerminalExternalService.class);
@@ -45,14 +47,15 @@ public record SwipeCard(
             return terminalExternalService.swipeCard(terminalId, this.cardCode)
                     .onErrorResume(e -> {
                         log.error("刷卡信息查询失败错误 terminalId: {} -- {}", terminalId, this, e);
-                        client.send(ServerErrorMessage.CARD_INFORMATION_QUERY_ERROR_FAILED);
+                        terminalClient.send(ServerErrorMessage.CARD_INFORMATION_QUERY_ERROR_FAILED);
                         return Mono.empty();
                     })
                     .flatMap(it -> CallingFlow.authorizedMoveOutGoods(
-                            client,
+                            terminalClient,
                             it.transactionCode(),
                             withSwipeCardResp(it),
-                            terminalExternalService::swipeCardCallback
+                            req -> terminalExternalService.swipeCardCallback(req)
+                                    .retryWhen(Retry.backoff(1, Duration.ofSeconds(1)))
                     ));
         });
     }

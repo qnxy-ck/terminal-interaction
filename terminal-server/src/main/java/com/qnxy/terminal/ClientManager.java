@@ -1,6 +1,6 @@
 package com.qnxy.terminal;
 
-import com.qnxy.terminal.client.Client;
+import com.qnxy.terminal.client.TerminalClient;
 
 import java.util.Map;
 import java.util.Optional;
@@ -11,14 +11,14 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class ClientManager {
 
-    private static final Map<Long, Client> clients = new ConcurrentHashMap<>();
+    private static final Map<Long, TerminalClient> clients = new ConcurrentHashMap<>();
 
 
-    public static void addClient(Long id, Client client) {
-        clients.put(id, client);
+    public static void addClient(Long id, TerminalClient terminalClient) {
+        clients.put(id, terminalClient);
     }
 
-    public static Optional<Client> findClient(Long id) {
+    public static Optional<TerminalClient> findClient(Long id) {
         return Optional.ofNullable(clients.get(id));
     }
 

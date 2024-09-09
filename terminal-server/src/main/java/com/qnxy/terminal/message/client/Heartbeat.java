@@ -1,7 +1,7 @@
 package com.qnxy.terminal.message.client;
 
-import com.qnxy.terminal.client.Client;
 import com.qnxy.terminal.client.ClientContext;
+import com.qnxy.terminal.client.TerminalClient;
 import com.qnxy.terminal.message.server.Successful;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -20,12 +20,12 @@ public final class Heartbeat implements ProactiveMessages {
     }
 
     @Override
-    public Mono<Void> handle(Client client) {
+    public Mono<Void> handle(TerminalClient terminalClient) {
         return Mono.deferContextual(ctx -> {
             final Long terminalId = ctx.get(ClientContext.class).getTerminalId();
             log.debug("terminalId: {} -> {}", terminalId, this);
 
-            client.send(Successful.INSTANCE);
+            terminalClient.send(Successful.INSTANCE);
             return Mono.empty();
         });
     }

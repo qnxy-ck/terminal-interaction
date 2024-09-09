@@ -1,6 +1,6 @@
 package com.qnxy.terminal.message.client;
 
-import com.qnxy.terminal.client.Client;
+import com.qnxy.terminal.client.TerminalClient;
 import com.qnxy.terminal.message.ClientMessage;
 import reactor.core.publisher.Mono;
 
@@ -13,6 +13,6 @@ import reactor.core.publisher.Mono;
  */
 public interface ProactiveMessages extends ClientMessage {
 
-    Mono<Void> handle(Client client);
+    Mono<Void> handle(TerminalClient terminalClient);
 
 }

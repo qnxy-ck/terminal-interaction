@@ -1,7 +1,7 @@
 package com.qnxy.terminal;
 
 import com.qnxy.terminal.api.data.SwipeCardCallbackReq;
-import com.qnxy.terminal.client.Client;
+import com.qnxy.terminal.client.TerminalClient;
 import com.qnxy.terminal.message.ClientMessage;
 import com.qnxy.terminal.message.ServerErrorMessage;
 import com.qnxy.terminal.message.client.AdjustmentSuccessful;
@@ -27,51 +27,45 @@ public final class CallingFlow {
     /**
      * 授权机器出货
      *
-     * @param client          那个终端
+     * @param terminalClient          那个终端
      * @param transactionCode 交易码
      * @param message         授权信息
      * @param callback        回调
      */
     public static Mono<Void> authorizedMoveOutGoods(
-            Client client,
+            TerminalClient terminalClient,
             long transactionCode,
             AuthorizedMoveOutGoodsMessage message,
             Function<SwipeCardCallbackReq, Mono<Void>> callback
     ) {
 
-        return client.exchange(message)
+        return terminalClient.exchange(message)
                 .last()
-                .flatMap(it -> {
-                    SwipeCardCallbackReq swipeCardCallbackReq;
-
-                    if (it instanceof AuthorizedMoveOutGoodsReceipt receiptMessage) {
-                        swipeCardCallbackReq = SwipeCardCallbackReq.withSuccess(
+                .flatMap(it -> expectMessage(
+                        it,
+                        AuthorizedMoveOutGoodsReceipt.class,
+                        terminalClient,
+                        expectMessage -> SwipeCardCallbackReq.withSuccess(
                                 transactionCode,
-                                receiptMessage.tagsCode(),
-                                receiptMessage.alreadyTakenOut(),
-                                receiptMessage.tagsType()
-                        );
-                    } else if (it instanceof ErrorMessage errorMessage) {
-                        swipeCardCallbackReq = withErrorCode(transactionCode, errorMessage.errorCodes());
-                    } else {
-                        client.send(ServerErrorMessage.UNEXPECTED_MESSAGE_ERROR);
-                        return client.close();
-                    }
-
-                    return callback.apply(swipeCardCallbackReq);
-                });
+                                expectMessage.tagsCode(),
+                                expectMessage.alreadyTakenOut(),
+                                expectMessage.tagsType()
+                        ),
+                        errorMessage -> Mono.just(withErrorCode(transactionCode, errorMessage.errorCodes()))
+                ))
+                .flatMap(callback);
     }
 
     /**
      * 同步授权出货接口
      */
-    public static Mono<AuthorizedMoveOutGoodsReceipt> authorizedMoveOutGoodsSync(Client client, AuthorizedMoveOutGoodsMessage message) {
-        return client.exchange(message)
+    public static Mono<AuthorizedMoveOutGoodsReceipt> authorizedMoveOutGoodsSync(TerminalClient terminalClient, AuthorizedMoveOutGoodsMessage message) {
+        return terminalClient.exchange(message)
                 .last()
                 .flatMap(it -> expectMessage(
                         it,
                         AuthorizedMoveOutGoodsReceipt.class,
-                        client,
+                        terminalClient,
                         Function.identity(),
                         errMsg -> Mono.error(new TerminalExecuteException(errMsg.errorCodes()))
                 ));
@@ -80,17 +74,17 @@ public final class CallingFlow {
     /**
      * 音量调节
      *
-     * @param client 被调节的机器
+     * @param terminalClient 被调节的机器
      * @param volume 调节的音量
      * @return 成功返回true
      */
-    public static Mono<Boolean> volumeAdjustment(Client client, byte volume) {
-        return client.exchange(new VolumeAdjustment(volume))
+    public static Mono<Boolean> volumeAdjustment(TerminalClient terminalClient, byte volume) {
+        return terminalClient.exchange(new VolumeAdjustment(volume))
                 .last()
                 .flatMap(it -> expectMessage(
                         it,
                         AdjustmentSuccessful.class,
-                        client,
+                        terminalClient,
                         expectMsg -> true,
                         err -> Mono.just(false)
                 ));
@@ -100,8 +94,7 @@ public final class CallingFlow {
     private static <EXPECT_MESSAGE extends ClientMessage, T> Mono<T> expectMessage(
             ClientMessage clientMessage,
             Class<EXPECT_MESSAGE> expectedMessageClass,
-            Client client,
-
+            TerminalClient terminalClient,
             Function<EXPECT_MESSAGE, T> expectFunction,
             Function<ErrorMessage, Mono<T>> errorFunction
     ) {
@@ -113,8 +106,8 @@ public final class CallingFlow {
             return Mono.just(expectFunction.apply(expectedMessageClass.cast(clientMessage)));
         }
 
-        client.send(ServerErrorMessage.UNEXPECTED_MESSAGE_ERROR);
-        return client.close().then(Mono.empty());
+        terminalClient.send(ServerErrorMessage.UNEXPECTED_MESSAGE_ERROR);
+        return terminalClient.close().then(Mono.empty());
     }
 
 

@@ -12,7 +12,7 @@ public class AuthorizationInfo {
 
     private final Long terminalId;
     private final Duration terminalHeartbeatInterval;
-    private final Duration terminalWaitMaxMoveOutGoodsTime;
+    private final Duration synchronousExecutionMaximumWaitTime;
 
 
 }
