@@ -1,5 +1,6 @@
 package com.qnxy.terminal.message.client;
 
+import com.qnxy.terminal.IllegalEncodingException;
 import com.qnxy.terminal.api.data.GoodsTagsType;
 import io.netty.buffer.ByteBuf;
 
@@ -18,11 +19,14 @@ public record AuthorizedMoveOutGoodsReceipt(
 
     public static AuthorizedMoveOutGoodsReceipt decode(ByteBuf buffer) {
         final boolean alreadyTakenOut = buffer.readBoolean();
-        final GoodsTagsType goodsTagsType = GoodsTagsType.typeNumberOf(buffer.readByte())
-                .orElseThrow(() -> new IllegalArgumentException("错误的标签类型"));
+        final byte tagsTypeNum = buffer.readByte();
 
-        final String tagsCode = buffer.readCharSequence(buffer.readerIndex(), StandardCharsets.UTF_8)
-                .toString();
+        final GoodsTagsType goodsTagsType = GoodsTagsType.typeNumberOf(tagsTypeNum)
+                .orElseThrow(() -> new IllegalEncodingException("未知的标签类型: " + tagsTypeNum));
+
+        final String tagsCode = goodsTagsType != GoodsTagsType.NOTHING
+                ? buffer.readCharSequence(buffer.readableBytes(), StandardCharsets.UTF_8).toString()
+                : null;
 
         return new AuthorizedMoveOutGoodsReceipt(alreadyTakenOut, goodsTagsType, tagsCode);
     }

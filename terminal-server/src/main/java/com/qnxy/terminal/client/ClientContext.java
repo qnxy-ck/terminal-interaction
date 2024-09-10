@@ -1,5 +1,6 @@
 package com.qnxy.terminal.client;
 
+import com.qnxy.terminal.api.TerminalExternalService;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -8,7 +9,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * 上下文信息
- * 
+ *
  * @author Qnxy
  */
 @Data
@@ -34,5 +35,8 @@ public class ClientContext {
      * 同步消息执行最大等待时间
      */
     private Duration synchronousExecutionMaximumWaitTime;
+
+    private TerminalExternalService terminalExternalService;
+    
 
 }

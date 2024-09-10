@@ -1,7 +1,9 @@
 package com.qnxy.terminal.message.client;
 
+import com.qnxy.terminal.ProactiveAsyncProcessor;
 import com.qnxy.terminal.client.ClientContext;
 import com.qnxy.terminal.client.TerminalClient;
+import com.qnxy.terminal.message.ClientMessage;
 import com.qnxy.terminal.message.server.Successful;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +14,7 @@ import reactor.core.publisher.Mono;
  */
 @ToString
 @Slf4j
-public final class Heartbeat implements ProactiveMessages {
+public final class Heartbeat implements ProactiveAsyncProcessor, ClientMessage {
 
     public static final Heartbeat INSTANCE = new Heartbeat();
 

@@ -10,7 +10,8 @@ public final class ClientMessageDecoder {
 
 
     public static ClientMessage decode(ByteBuf byteBuf) {
-        final ClientMessageType messageType = ClientMessageType.valueOf(byteBuf.readByte());
+        final short instructionCode = byteBuf.readUnsignedByte();
+        final ClientMessageType messageType = ClientMessageType.valueOf((char) instructionCode);
 
         return decodeBody(byteBuf, messageType);
     }

@@ -20,7 +20,7 @@
     <dependencies>
         <dependency>
             <groupId>com.qnxy</groupId>
-            <artifactId>external-api</artifactId>
+            <artifactId>terminal-external-api</artifactId>
         </dependency>
 
         <dependency>

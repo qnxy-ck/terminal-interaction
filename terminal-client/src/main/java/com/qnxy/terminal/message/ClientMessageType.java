@@ -1,5 +1,6 @@
 package com.qnxy.terminal.message;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Arrays;
@@ -8,6 +9,7 @@ import java.util.Arrays;
  * @author Qnxy
  */
 @RequiredArgsConstructor
+@Getter
 public enum ClientMessageType {
 
     CONNECT_AUTHENTICATION('A'),

@@ -13,10 +13,26 @@ import java.time.Duration;
  */
 public interface TerminalClient {
 
+
+    /**
+     * 发送没有回应的消息
+     *
+     * @param message 消息内容
+     */
+    void send(ServerMessage message);
+
+    /**
+     * 发送带有回应的消息
+     *
+     * @param message 消息内容
+     * @return 响应内容
+     */
+    Flux<ClientMessage> exchange(ServerMessage message);
+
     /**
      * 关闭当前终端
      */
-    Mono<Void> close();
+    Mono<Void> close(ServerMessage message);
 
     /**
      * 注册当前客户端的心跳超时处理器
@@ -33,21 +49,6 @@ public interface TerminalClient {
      * 如果在指定时间 {@link ServerConfiguration#maximumAuthorizationWait()}内未收到授权消息或者未成功授权则关闭连接
      */
     void cancelClientDelayedClose();
-
-    /**
-     * 发送没有回应的消息
-     *
-     * @param message 消息内容
-     */
-    void send(ServerMessage message);
-
-    /**
-     * 发送带有回应的消息
-     *
-     * @param message 消息内容
-     * @return 响应内容
-     */
-    Flux<ClientMessage> exchange(ServerMessage message);
 
 
 }

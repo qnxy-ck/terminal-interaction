@@ -1,4 +1,4 @@
-package com.qnxy.terminal;
+package com.qnxy.terminal.message.client;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -11,18 +11,16 @@ import java.util.Optional;
  */
 @RequiredArgsConstructor
 @Getter
-public enum ProtocolVersion {
+public enum SwipeCardMethod {
 
-    VERSION_1(1),
-
+    ID_CARD_READING,
+    SCAN_QR_CODE_ON_CARD,
     ;
 
 
-    private final int versionNumber;
-
-    public static Optional<ProtocolVersion> valueOf(int versionNumber) {
+    public static Optional<SwipeCardMethod> typeNumberOf(byte typeNumber) {
         return Arrays.stream(values())
-                .filter(v -> v.getVersionNumber() == versionNumber)
+                .filter(value -> value.ordinal() == typeNumber)
                 .findFirst();
     }
 }

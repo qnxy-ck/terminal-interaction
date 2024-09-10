@@ -10,7 +10,8 @@
     <packaging>pom</packaging>
     <modules>
         <module>terminal-server</module>
-        <module>terminal-external</module>
+        <module>terminal-external-api</module>
+        <module>terminal-client</module>
     </modules>
 
     <properties>
@@ -28,7 +29,7 @@
         <dependencies>
             <dependency>
                 <groupId>com.qnxy</groupId>
-                <artifactId>external-api</artifactId>
+                <artifactId>terminal-external-api</artifactId>
                 <version>1.0-SNAPSHOT</version>
             </dependency>
 

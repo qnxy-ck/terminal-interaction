@@ -26,5 +26,9 @@ public final class ClientManager {
         Optional.ofNullable(id).ifPresent(client -> clients.remove(id));
     }
 
+    public static int countClients() {
+        return clients.size();
+    }
+
 
 }
