@@ -2,9 +2,9 @@ package com.qnxy.terminal;
 
 import com.qnxy.terminal.api.data.SwipeCardCallbackReq;
 import com.qnxy.terminal.client.TerminalClient;
-import com.qnxy.terminal.message.client.AdjustmentSuccessful;
 import com.qnxy.terminal.message.client.AuthorizedMoveOutGoodsReceipt;
 import com.qnxy.terminal.message.client.ErrorMessage;
+import com.qnxy.terminal.message.client.SetupSuccessful;
 import com.qnxy.terminal.message.server.AuthorizedMoveOutGoods;
 import com.qnxy.terminal.message.server.ServerError;
 import com.qnxy.terminal.message.server.VolumeAdjustment;
@@ -32,7 +32,6 @@ public final class CallingFlow {
      * @param callback        回调
      */
     public static Mono<Void> authorizedMoveOutGoods(TerminalClient terminalClient, long transactionCode, AuthorizedMoveOutGoods message, Function<SwipeCardCallbackReq, Mono<Void>> callback) {
-
         return terminalClient.exchange(message)
                 .last()
                 .flatMap(it -> {
@@ -85,7 +84,7 @@ public final class CallingFlow {
         return terminalClient.exchange(new VolumeAdjustment(volume))
                 .last()
                 .flatMap(it -> {
-                    if (it instanceof AdjustmentSuccessful) {
+                    if (it instanceof SetupSuccessful) {
                         return Mono.just(true);
                     }
 

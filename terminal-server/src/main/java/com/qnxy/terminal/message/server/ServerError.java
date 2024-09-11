@@ -42,6 +42,11 @@ public enum ServerError implements ServerMessage {
      */
     SYNCHRONIZATION_TASK_IN_PROGRESS,
 
+    /**
+     * 服务器异常
+     */
+    SERVER_EXCEPTION,
+
     ;
 
 

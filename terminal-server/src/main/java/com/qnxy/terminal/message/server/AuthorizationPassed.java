@@ -9,11 +9,10 @@ import java.time.Duration;
 import static com.qnxy.terminal.message.ServerMessageType.AUTHORIZATION_SUCCESSFUL;
 
 /**
- * @param heartbeatInterval               指定终端心跳间隔 (秒)
- * @param maximumWaitSynchronousExecution 同步执行最大等待时间 (秒)
+ * @param heartbeatInterval 指定终端心跳间隔 (秒)
  * @author Qnxy
  */
-public record AuthorizationSuccessful(
+public record AuthorizationPassed(
         Duration heartbeatInterval
 ) implements ServerMessage {
 

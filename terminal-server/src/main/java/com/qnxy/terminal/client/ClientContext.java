@@ -1,8 +1,7 @@
 package com.qnxy.terminal.client;
 
-import com.qnxy.terminal.api.TerminalExternalService;
-import lombok.Data;
-import lombok.experimental.Accessors;
+import com.qnxy.terminal.ServerContext;
+import lombok.Getter;
 
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -12,14 +11,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *
  * @author Qnxy
  */
-@Data
-@Accessors(chain = true)
+@Getter
 public class ClientContext {
 
     /**
      * 当前终端是否认证
      */
-    private final AtomicBoolean isAuth;
+    private final AtomicBoolean authorized;
+    private final ServerContext serverContext;
 
     /**
      * 终端id
@@ -36,7 +35,16 @@ public class ClientContext {
      */
     private Duration synchronousExecutionMaximumWaitTime;
 
-    private TerminalExternalService terminalExternalService;
-    
+    public ClientContext(AtomicBoolean authorized, ServerContext serverContext) {
+        this.authorized = authorized;
+        this.serverContext = serverContext;
+    }
+
+    public void setAuthInfo(Long terminalId, String imei, Duration synchronousExecutionMaximumWaitTime) {
+        this.terminalId = terminalId;
+        this.imei = imei;
+        this.synchronousExecutionMaximumWaitTime = synchronousExecutionMaximumWaitTime;
+    }
+
 
 }

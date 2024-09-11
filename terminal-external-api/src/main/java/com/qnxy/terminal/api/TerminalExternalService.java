@@ -75,7 +75,8 @@ public interface TerminalExternalService {
                             (byte) 1,
                             true
                     ))
-                    .delayElement(Duration.ofSeconds(2));
+                    .delayElement(Duration.ofMillis(2000))
+                    ;
         }
 
         @Override

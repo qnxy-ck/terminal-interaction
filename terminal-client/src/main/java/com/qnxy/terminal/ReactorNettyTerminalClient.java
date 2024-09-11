@@ -4,6 +4,8 @@ import com.qnxy.terminal.message.ClientMessage;
 import com.qnxy.terminal.message.ServerMessage;
 import com.qnxy.terminal.message.client.AuthorizedMoveOutGoodsReceipt;
 import com.qnxy.terminal.message.client.GoodsTagsType;
+import com.qnxy.terminal.message.client.SetupSuccessful;
+import com.qnxy.terminal.message.server.AuthorizationPassed;
 import com.qnxy.terminal.message.server.AuthorizedMoveOutGoods;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import lombok.extern.slf4j.Slf4j;
@@ -40,19 +42,25 @@ public class ReactorNettyTerminalClient implements TerminalClient {
                 .map(MessageDecoder::decode)
                 .doOnNext(it -> log.info("收到消息 {}", it))
                 .flatMap(it -> {
+                    if (it instanceof AuthorizationPassed) {
+                        return Mono.just(SetupSuccessful.INSTANCE);
+                    }
+
                     if (it instanceof AuthorizedMoveOutGoods moveOutGoods) {
-//                        return Mono.fromRunnable(() -> this.send(new SwipeCard(SwipeCardMethod.ID_CARD_READING, "卡号xxx")));
-//                        return Mono.fromRunnable(() -> this.send(new ErrorMessage(new ErrorCode[]{ErrorCode.DETECT_GOODS_ID_TIMEOUT})));
-                        return Mono.fromRunnable(() -> this.send(new AuthorizedMoveOutGoodsReceipt(
+//                        return Mono.just(new SwipeCard(SwipeCardMethod.ID_CARD_READING, "卡号xxx"));
+//                        return Mono.just(new ErrorMessage(new ErrorCode[]{ErrorCode.DETECT_GOODS_ID_TIMEOUT}));
+                        return Mono.just(new AuthorizedMoveOutGoodsReceipt(
                                         true,
                                         moveOutGoods.readTags() ? GoodsTagsType.QR_CODE : GoodsTagsType.NOTHING,
                                         moveOutGoods.readTags() ? "货物标签xxx" : null
-                                )))
-                                .delaySubscription(Duration.ofSeconds(3));
+                                ))
+                                .delaySubscription(Duration.ofSeconds(3))
+                                ;
                     }
 
                     return Mono.empty();
                 })
+                .doOnNext(this::send)
                 .subscribe();
 
 

@@ -5,5 +5,5 @@ import com.qnxy.terminal.message.ClientMessage;
 /**
  * @author Qnxy
  */
-public interface AsyncMessage extends ClientMessage {
+public interface ProactiveAsyncMessage extends ClientMessage {
 }

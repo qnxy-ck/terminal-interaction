@@ -1,5 +1,7 @@
-package com.qnxy.terminal.message;
+package com.qnxy.terminal.client;
 
+import com.qnxy.terminal.message.ClientMessage;
+import com.qnxy.terminal.message.ClientMessageType;
 import com.qnxy.terminal.message.client.*;
 import io.netty.buffer.ByteBuf;
 
@@ -21,7 +23,7 @@ public final class ClientMessageDecoder {
         return switch (messageType) {
             case CONNECT_AUTHENTICATION -> ConnectAuthentication.decode(body);
             case HEARTBEAT -> Heartbeat.INSTANCE;
-            case ADJUSTMENT_SUCCESSFUL -> AdjustmentSuccessful.INSTANCE;
+            case SETUP_SUCCESSFUL -> SetupSuccessful.INSTANCE;
             case SWIPE_CARD -> SwipeCard.decode(body);
             case ERROR_MESSAGE -> ErrorMessage.decode(body);
             case AUTHORIZED_MOVE_OUT_GOODS_RECEIPT -> AuthorizedMoveOutGoodsReceipt.decode(body);

@@ -19,8 +19,13 @@ public class NettyTcpApplicationEngine implements ApplicationEngine {
     @Override
     public void start(boolean wait) {
 
+
+        final ServerContext serverContext = new ServerContext(
+                TerminalExternalService.INSTANCE,
+                configuration
+        );
         TcpServer.create()
-                .doOnConnection(it -> new ReactorNettyTerminalClient(it, configuration, TerminalExternalService.INSTANCE))
+                .doOnConnection(it -> new ReactorNettyTerminalClient(it, serverContext))
                 .port(configuration.port())
                 .bind()
                 .subscribe(it -> Runtime.getRuntime().addShutdownHook(new Thread(it::dispose)));

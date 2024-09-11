@@ -10,13 +10,13 @@ import java.time.Duration;
  * @param maximumWaitSynchronousExecution 同步执行最大等待时间 (秒)
  * @author Qnxy
  */
-public record AuthorizationSuccessful(
+public record AuthorizationPassed(
         Duration heartbeatInterval
 ) implements ServerMessage {
 
-    public static AuthorizationSuccessful decode(ByteBuf buffer) {
+    public static AuthorizationPassed decode(ByteBuf buffer) {
         byte b = buffer.readByte();
-        return new AuthorizationSuccessful(Duration.ofSeconds(b));
+        return new AuthorizationPassed(Duration.ofSeconds(b));
     }
 
 }

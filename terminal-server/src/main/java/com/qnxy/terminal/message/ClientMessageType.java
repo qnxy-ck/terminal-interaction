@@ -13,7 +13,7 @@ public enum ClientMessageType {
     CONNECT_AUTHENTICATION('A'),
     HEARTBEAT('P'),
     AUTHORIZED_MOVE_OUT_GOODS_RECEIPT('M'),
-    ADJUSTMENT_SUCCESSFUL('S'),
+    SETUP_SUCCESSFUL('S'),
     SWIPE_CARD('c'),
     ERROR_MESSAGE('E');
 

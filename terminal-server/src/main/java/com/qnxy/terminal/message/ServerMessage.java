@@ -17,7 +17,7 @@ public interface ServerMessage {
         return byteBufAllocator.ioBuffer(1).writeByte(serverMessageType.getInstructionCode());
     }
 
-    default ByteBuf simpleByteBuf(ByteBufAllocator byteBufAllocator, ServerMessageType serverMessageType, Consumer<ByteBuf> consumer) {
+    default ByteBuf simpleByteBuf(ByteBufAllocator byteBufAllocator, ServerMessageType serverMessageType, Consumer<ByteBuf> co  nsumer) {
         final ByteBuf byteBuf = byteBufAllocator.ioBuffer();
 
         byteBuf.writeByte(serverMessageType.getInstructionCode());

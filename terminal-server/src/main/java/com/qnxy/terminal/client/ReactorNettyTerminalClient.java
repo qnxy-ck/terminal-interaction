@@ -1,15 +1,13 @@
 package com.qnxy.terminal.client;
 
 import com.qnxy.terminal.ClientManager;
-import com.qnxy.terminal.ProactiveAsyncProcessor;
-import com.qnxy.terminal.ProactiveSyncMessageProcessor;
-import com.qnxy.terminal.ServerConfiguration;
-import com.qnxy.terminal.api.TerminalExternalService;
+import com.qnxy.terminal.ServerContext;
 import com.qnxy.terminal.message.ClientMessage;
-import com.qnxy.terminal.message.ClientMessageDecoder;
 import com.qnxy.terminal.message.ServerMessage;
 import com.qnxy.terminal.message.client.CompleteMessage;
 import com.qnxy.terminal.message.client.ConnectAuthentication;
+import com.qnxy.terminal.message.client.ProactiveAsyncMessage;
+import com.qnxy.terminal.message.client.ProactiveSyncMessage;
 import com.qnxy.terminal.message.server.Quit;
 import com.qnxy.terminal.message.server.ServerError;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
@@ -25,13 +23,15 @@ import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
 import reactor.netty.Connection;
 import reactor.util.concurrent.Queues;
-import reactor.util.context.Context;
 
 import java.time.Duration;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
+
+import static com.qnxy.terminal.processor.ProactiveMessageProcessorFactory.findAsyncProcessor;
+import static com.qnxy.terminal.processor.ProactiveMessageProcessorFactory.findSyncProcessor;
 
 
 /**
@@ -41,31 +41,26 @@ import java.util.concurrent.locks.ReentrantLock;
 public class ReactorNettyTerminalClient implements TerminalClient {
 
     private final AtomicBoolean isClosed = new AtomicBoolean(false);
-    private final Sinks.Many<ServerMessage> requestSink = Sinks.many().unicast().onBackpressureBuffer();
+    private final Sinks.Many<ServerMessage> requestSink = Sinks.unsafe().many().unicast().onBackpressureBuffer();
     private final Queue<Exchange> exchangeQueue = Queues.<Exchange>get(Queues.SMALL_BUFFER_SIZE).get();
     private final ReentrantLock lock = new ReentrantLock();
 
     private final Connection connection;
-    private final ServerConfiguration configuration;
+    private final ServerContext serverContext;
     private final ClientContext clientContext;
-    private final TerminalExternalService terminalExternalService;
     private Disposable tcpDelayCloseDisposable;
 
     @Setter(AccessLevel.PRIVATE)
     private volatile Exchange exchange;
 
-    public ReactorNettyTerminalClient(Connection connection, ServerConfiguration configuration, TerminalExternalService terminalExternalService) {
+    public ReactorNettyTerminalClient(Connection connection, ServerContext serverContext) {
         this.connection = connection;
-        this.configuration = configuration;
-        this.terminalExternalService = terminalExternalService;
+        this.serverContext = serverContext;
 
-        this.clientContext = new ClientContext(new AtomicBoolean(false));
-        final MessageEncoder messageEncoder = new MessageEncoder(connection.outbound().alloc());
+        this.clientContext = new ClientContext(new AtomicBoolean(false), serverContext);
+        final ServerMessageEncoder serverMessageEncoder = new ServerMessageEncoder(connection.outbound().alloc());
 
-        connection.onDispose(() -> {
-            ClientManager.removeClient(clientContext.getTerminalId());
-            System.out.println("在线数量" + ClientManager.countClients());
-        });
+        connection.onDispose(() -> ClientManager.removeClient(clientContext.getTerminalId()));
         connection.addHandlerLast(new LengthFieldBasedFrameDecoder(
                 Short.MAX_VALUE - Short.BYTES,
                 0,
@@ -78,21 +73,20 @@ public class ReactorNettyTerminalClient implements TerminalClient {
 
         connection.inbound()
                 .receive()
-//                .doOnNext(it -> log.info("收到字节\n{}", ByteBufUtil.prettyHexDump(it)))
                 .map(ClientMessageDecoder::decode)
                 .doOnNext(it -> log.info("收到消息+ {}", it))
                 .flatMap(this::dispatcherProcessor)
+                .contextWrite(ctx -> ctx.put(ClientContext.class, this.clientContext))
                 .subscribe();
 
         this.requestSink.asFlux()
                 .doOnNext(it -> log.info("发送消息- {}", it))
-                .map(messageEncoder::encode)
+                .map(serverMessageEncoder::encode)
                 .flatMap(it -> this.connection.outbound().send(it), 1)
                 .onErrorResume(this::resumeError)
                 .doAfterTerminate(() -> {
                 })
                 .subscribe();
-
     }
 
 
@@ -103,38 +97,41 @@ public class ReactorNettyTerminalClient implements TerminalClient {
      */
     private void clientDelayedClose() {
         this.tcpDelayCloseDisposable = this.close(ServerError.MAXIMUM_AUTHORIZATION_WAIT_ERROR)
-                .delaySubscription(this.configuration.maximumAuthorizationWait())
+                .delaySubscription(this.serverContext.serverConfiguration().maximumAuthorizationWait())
                 .subscribe();
     }
 
     private Mono<Void> dispatcherProcessor(ClientMessage message) {
         // 检查当前终端认证状态
         // 如果未认证则关闭连接
-        if (!this.clientContext.getIsAuth().get() && !(message instanceof ConnectAuthentication)) {
+        if (!this.clientContext.getAuthorized().get() && !(message instanceof ConnectAuthentication)) {
             log.error("未认证并且当前消息不为认证消息: {}", message);
             return this.close(ServerError.CONNECTION_REFUSED_ERROR);
         }
 
         // 主动异步消息 如心跳等.
-        if (message instanceof ProactiveAsyncProcessor proactiveAsyncProcessor) {
-            return proactiveAsyncProcessor.handle(this)
-                    .transform(this::proactiveProcessorContextWrite);
+        if (message instanceof ProactiveAsyncMessage proactiveAsyncMessage) {
+            return findAsyncProcessor(proactiveAsyncMessage.getClass())
+                    .map(it -> it.handle(this, proactiveAsyncMessage))
+                    .orElseGet(() -> this.close(ServerError.SERVER_EXCEPTION));
         }
 
         // 同步消息
-        if (message instanceof ProactiveSyncMessageProcessor proactiveSyncMessageProcessor) {
+        if (message instanceof ProactiveSyncMessage proactiveSyncMessage) {
             if (this.exchange == null) {
-                return proactiveSyncMessageProcessor.handle(this, newFlux())
-                        .transform(this::proactiveProcessorContextWrite);
+                return findSyncProcessor(proactiveSyncMessage.getClass())
+                        .map(it -> it.handle(this, proactiveSyncMessage, newResponseMessageFlux()))
+                        .orElseGet(() -> this.close(ServerError.SERVER_EXCEPTION));
             }
 
             log.debug("同步消息进行中, 当前消息已拒绝: {}", message);
-            return Mono.fromRunnable(() -> this.send(ServerError.SYNCHRONIZATION_TASK_IN_PROGRESS));
+            this.send(ServerError.SYNCHRONIZATION_TASK_IN_PROGRESS);
+            return Mono.empty();
         }
 
         if (this.exchange == null && !this.nextExchangeQueueValue()) {
             // 收到错误消息
-            return Mono.fromRunnable(() -> this.send(ServerError.UNEXPECTED_MESSAGE_ERROR));
+            return this.close(ServerError.UNEXPECTED_MESSAGE_ERROR);
         }
 
         if (this.exchange.emit(message)) {
@@ -144,16 +141,9 @@ public class ReactorNettyTerminalClient implements TerminalClient {
         return Mono.empty();
     }
 
-    private Flux<ClientMessage> newFlux() {
+    private Flux<ClientMessage> newResponseMessageFlux() {
         this.exchange = new Exchange();
         return Flux.create(sink -> exchange.sink = sink);
-    }
-
-    private Mono<Void> proactiveProcessorContextWrite(Mono<Void> processor) {
-        return processor.contextWrite(Context.of(
-                ClientContext.class, this.clientContext,
-                TerminalExternalService.class, this.terminalExternalService
-        ));
     }
 
     private boolean nextExchangeQueueValue() {
@@ -178,10 +168,9 @@ public class ReactorNettyTerminalClient implements TerminalClient {
                 }
 
                 this.cancelClientDelayedClose();
-                return Mono.just(Optional.ofNullable(message).orElse(Quit.INSTANCE))
-                        .doOnNext(this::send)
-                        .doOnSuccess(v -> this.connection.dispose())
-                        .then(this.connection.onDispose());
+                this.send(Optional.ofNullable(message).orElse(Quit.INSTANCE));
+                this.connection.dispose();
+                return this.connection.onDispose();
             }
 
             return Mono.empty();
@@ -214,7 +203,10 @@ public class ReactorNettyTerminalClient implements TerminalClient {
 
     @Override
     public void send(ServerMessage message) {
-        this.requestSink.emitNext(message, Sinks.EmitFailureHandler.FAIL_FAST);
+//        this.requestSink.emitNext(message, Sinks.EmitFailureHandler.FAIL_FAST);
+
+//        this.requestSink.emitNext(message, Sinks.EmitFailureHandler.busyLooping(Duration.ofSeconds(1)));
+        this.requestSink.tryEmitNext(message);
     }
 
     @Override
@@ -228,7 +220,7 @@ public class ReactorNettyTerminalClient implements TerminalClient {
                         this.lock.lock();
                         if (this.exchangeQueue.isEmpty() && this.exchange == null) {
                             this.exchangeQueue.offer(new Exchange(sink));
-                            this.requestSink.emitNext(message, Sinks.EmitFailureHandler.FAIL_FAST);
+                            this.requestSink.tryEmitNext(message);
                         } else {
                             if (!this.exchangeQueue.offer(new Exchange(sink, message))) {
                                 sink.error(new RuntimeException("请求队列已达到上限."));

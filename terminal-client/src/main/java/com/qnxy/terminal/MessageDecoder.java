@@ -2,7 +2,7 @@ package com.qnxy.terminal;
 
 import com.qnxy.terminal.message.ServerMessage;
 import com.qnxy.terminal.message.ServerMessageType;
-import com.qnxy.terminal.message.server.AuthorizationSuccessful;
+import com.qnxy.terminal.message.server.AuthorizationPassed;
 import com.qnxy.terminal.message.server.AuthorizedMoveOutGoods;
 import com.qnxy.terminal.message.server.ServerError;
 import com.qnxy.terminal.message.server.Successful;
@@ -25,7 +25,7 @@ public class MessageDecoder {
     private static ServerMessage decodeBody(ByteBuf body, ServerMessageType messageType) {
 
         return switch (messageType) {
-            case AUTHORIZATION_SUCCESSFUL -> AuthorizationSuccessful.decode(body);
+            case AUTHORIZATION_SUCCESSFUL -> AuthorizationPassed.decode(body);
             case SERVER_ERROR -> ServerError.decode(body);
             case SUCCESSFUL -> Successful.INSTANCE;
             case AUTHORIZED_MOVE_OUT_GOODS -> AuthorizedMoveOutGoods.decode(body);

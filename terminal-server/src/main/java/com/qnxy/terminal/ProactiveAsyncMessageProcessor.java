@@ -1,6 +1,7 @@
 package com.qnxy.terminal;
 
 import com.qnxy.terminal.client.TerminalClient;
+import com.qnxy.terminal.message.client.ProactiveAsyncMessage;
 import reactor.core.publisher.Mono;
 
 /**
@@ -10,8 +11,8 @@ import reactor.core.publisher.Mono;
  *
  * @author Qnxy
  */
-public interface ProactiveAsyncProcessor {
+public interface ProactiveAsyncMessageProcessor<CLIENT_MESSAGE extends ProactiveAsyncMessage> {
 
-    Mono<Void> handle(TerminalClient terminalClient);
+    Mono<Void> handle(TerminalClient terminalClient, CLIENT_MESSAGE clientMessage);
 
 }

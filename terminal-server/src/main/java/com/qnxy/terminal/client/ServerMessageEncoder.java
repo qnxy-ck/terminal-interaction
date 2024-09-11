@@ -10,7 +10,7 @@ import reactor.core.publisher.Mono;
  * @author Qnxy
  */
 @RequiredArgsConstructor
-public final class MessageEncoder {
+public final class ServerMessageEncoder {
 
     private final ByteBufAllocator byteBufAllocator;
 
