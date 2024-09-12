@@ -2,9 +2,9 @@ package com.qnxy.terminal.processor;
 
 import com.qnxy.terminal.ClientManager;
 import com.qnxy.terminal.ProactiveSyncMessageProcessor;
-import com.qnxy.terminal.api.TerminalExternalService;
 import com.qnxy.terminal.client.ClientContext;
 import com.qnxy.terminal.client.TerminalClient;
+import com.qnxy.terminal.external.TerminalExternalService;
 import com.qnxy.terminal.message.ClientMessage;
 import com.qnxy.terminal.message.client.AuthorizationApplication;
 import com.qnxy.terminal.message.client.SetupSuccessful;

@@ -1,7 +1,7 @@
 package com.qnxy.terminal;
 
-import com.qnxy.terminal.api.TerminalExternalService;
 import com.qnxy.terminal.client.ReactorNettyTerminalClient;
+import com.qnxy.terminal.external.TerminalExternalService;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Sinks;
 import reactor.netty.tcp.TcpServer;

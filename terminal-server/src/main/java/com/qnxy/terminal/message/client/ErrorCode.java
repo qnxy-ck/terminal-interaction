@@ -1,9 +1,11 @@
-package com.qnxy.terminal.api.data;
+package com.qnxy.terminal.message.client;
 
 import java.util.Arrays;
 import java.util.Optional;
 
 /**
+ * 终端错误码
+ *
  * @author Qnxy
  */
 public enum ErrorCode {

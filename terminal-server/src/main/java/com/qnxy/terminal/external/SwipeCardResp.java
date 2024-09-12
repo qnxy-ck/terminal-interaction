@@ -1,4 +1,4 @@
-package com.qnxy.terminal.api.data;
+package com.qnxy.terminal.external;
 
 /**
  * @param transactionCode 交易码

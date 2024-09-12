@@ -19,11 +19,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.qnxy</groupId>
-            <artifactId>terminal-external-api</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>io.projectreactor.netty</groupId>
             <artifactId>reactor-netty</artifactId>
         </dependency>

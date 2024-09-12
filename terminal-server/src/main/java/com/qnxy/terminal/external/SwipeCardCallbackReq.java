@@ -1,4 +1,6 @@
-package com.qnxy.terminal.api.data;
+package com.qnxy.terminal.external;
+
+import com.qnxy.terminal.message.client.ErrorCode;
 
 import java.util.Arrays;
 

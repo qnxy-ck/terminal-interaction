@@ -1,6 +1,6 @@
 package com.qnxy.terminal.exceptions;
 
-import com.qnxy.terminal.api.data.ErrorCode;
+import com.qnxy.terminal.message.client.ErrorCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 

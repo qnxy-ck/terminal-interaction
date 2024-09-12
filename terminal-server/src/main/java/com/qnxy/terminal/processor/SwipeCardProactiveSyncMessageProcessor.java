@@ -2,17 +2,13 @@ package com.qnxy.terminal.processor;
 
 import com.qnxy.terminal.ProactiveSyncMessageProcessor;
 import com.qnxy.terminal.ServerConfiguration;
-import com.qnxy.terminal.api.TerminalExternalService;
-import com.qnxy.terminal.api.data.ErrorCode;
-import com.qnxy.terminal.api.data.SwipeCardCallbackReq;
-import com.qnxy.terminal.api.data.SwipeCardMethod;
-import com.qnxy.terminal.api.data.SwipeCardResp;
 import com.qnxy.terminal.client.ClientContext;
 import com.qnxy.terminal.client.TerminalClient;
+import com.qnxy.terminal.external.SwipeCardCallbackReq;
+import com.qnxy.terminal.external.SwipeCardResp;
+import com.qnxy.terminal.external.TerminalExternalService;
 import com.qnxy.terminal.message.ClientMessage;
-import com.qnxy.terminal.message.client.AuthorizedMoveOutGoodsReceipt;
-import com.qnxy.terminal.message.client.ErrorMessage;
-import com.qnxy.terminal.message.client.SwipeCard;
+import com.qnxy.terminal.message.client.*;
 import com.qnxy.terminal.message.server.AuthorizedMoveOutGoods;
 import com.qnxy.terminal.message.server.ServerError;
 import lombok.extern.slf4j.Slf4j;
@@ -21,9 +17,9 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 
-import static com.qnxy.terminal.api.data.ErrorCode.COMMUNICATION_FAILURE;
-import static com.qnxy.terminal.api.data.SwipeCardCallbackReq.withErrorCode;
-import static com.qnxy.terminal.api.data.SwipeCardCallbackReq.withSuccess;
+import static com.qnxy.terminal.external.SwipeCardCallbackReq.withErrorCode;
+import static com.qnxy.terminal.external.SwipeCardCallbackReq.withSuccess;
+import static com.qnxy.terminal.message.client.ErrorCode.COMMUNICATION_FAILURE;
 import static com.qnxy.terminal.message.server.AuthorizedMoveOutGoods.withSwipeCardResp;
 
 /**

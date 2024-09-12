@@ -1,4 +1,4 @@
-package com.qnxy.terminal.api.data;
+package com.qnxy.terminal.message.client;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

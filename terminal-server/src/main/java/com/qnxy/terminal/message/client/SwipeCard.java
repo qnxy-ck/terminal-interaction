@@ -1,6 +1,5 @@
 package com.qnxy.terminal.message.client;
 
-import com.qnxy.terminal.api.data.SwipeCardMethod;
 import com.qnxy.terminal.exceptions.IllegalDecodingException;
 import io.netty.buffer.ByteBuf;
 

@@ -1,6 +1,6 @@
 package com.qnxy.terminal;
 
-import com.qnxy.terminal.api.TerminalExternalService;
+import com.qnxy.terminal.external.TerminalExternalService;
 
 /**
  * @author Qnxy

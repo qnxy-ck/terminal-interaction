@@ -1,6 +1,6 @@
 package com.qnxy.terminal.message.server;
 
-import com.qnxy.terminal.api.data.SwipeCardResp;
+import com.qnxy.terminal.external.SwipeCardResp;
 import com.qnxy.terminal.message.ServerMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;

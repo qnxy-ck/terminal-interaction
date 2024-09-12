@@ -1,8 +1,8 @@
 package com.qnxy.terminal;
 
-import com.qnxy.terminal.api.data.SwipeCardCallbackReq;
 import com.qnxy.terminal.client.TerminalClient;
 import com.qnxy.terminal.exceptions.TerminalExecuteException;
+import com.qnxy.terminal.external.SwipeCardCallbackReq;
 import com.qnxy.terminal.message.client.AuthorizedMoveOutGoodsReceipt;
 import com.qnxy.terminal.message.client.ErrorMessage;
 import com.qnxy.terminal.message.client.SetupSuccessful;
@@ -14,8 +14,8 @@ import reactor.core.publisher.Mono;
 
 import java.util.function.Function;
 
-import static com.qnxy.terminal.api.data.SwipeCardCallbackReq.withErrorCode;
-import static com.qnxy.terminal.api.data.SwipeCardCallbackReq.withSuccess;
+import static com.qnxy.terminal.external.SwipeCardCallbackReq.withErrorCode;
+import static com.qnxy.terminal.external.SwipeCardCallbackReq.withSuccess;
 
 /**
  * 终端机器调用流程
