@@ -6,10 +6,15 @@ import io.netty.buffer.ByteBufAllocator;
 import java.util.function.Consumer;
 
 /**
+ * 服务端消息类型标志
+ *
  * @author Qnxy
  */
 public interface ServerMessage {
 
+    /**
+     * 服务器端消息编码操作
+     */
     ByteBuf encode(ByteBufAllocator byteBufAllocator);
 
 

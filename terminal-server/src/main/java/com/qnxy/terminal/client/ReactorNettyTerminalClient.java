@@ -2,13 +2,13 @@ package com.qnxy.terminal.client;
 
 import com.qnxy.terminal.ClientManager;
 import com.qnxy.terminal.ServerContext;
+import com.qnxy.terminal.exceptions.TheRequestQueueHasReachedItsLimitException;
 import com.qnxy.terminal.message.ClientMessage;
 import com.qnxy.terminal.message.ServerMessage;
+import com.qnxy.terminal.message.client.AuthorizationApplication;
 import com.qnxy.terminal.message.client.CompleteMessage;
-import com.qnxy.terminal.message.client.ConnectAuthentication;
 import com.qnxy.terminal.message.client.ProactiveAsyncMessage;
 import com.qnxy.terminal.message.client.ProactiveSyncMessage;
-import com.qnxy.terminal.message.server.Quit;
 import com.qnxy.terminal.message.server.ServerError;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import lombok.AccessLevel;
@@ -104,7 +104,7 @@ public class ReactorNettyTerminalClient implements TerminalClient {
     private Mono<Void> dispatcherProcessor(ClientMessage message) {
         // 检查当前终端认证状态
         // 如果未认证则关闭连接
-        if (!this.clientContext.getAuthorized().get() && !(message instanceof ConnectAuthentication)) {
+        if (!this.clientContext.getAuthorized().get() && !(message instanceof AuthorizationApplication)) {
             log.error("未认证并且当前消息不为认证消息: {}", message);
             return this.close(ServerError.CONNECTION_REFUSED_ERROR);
         }
@@ -168,7 +168,7 @@ public class ReactorNettyTerminalClient implements TerminalClient {
                 }
 
                 this.cancelClientDelayedClose();
-                this.send(Optional.ofNullable(message).orElse(Quit.INSTANCE));
+                this.send(message);
                 this.connection.dispose();
                 return this.connection.onDispose();
             }
@@ -203,9 +203,6 @@ public class ReactorNettyTerminalClient implements TerminalClient {
 
     @Override
     public void send(ServerMessage message) {
-//        this.requestSink.emitNext(message, Sinks.EmitFailureHandler.FAIL_FAST);
-
-//        this.requestSink.emitNext(message, Sinks.EmitFailureHandler.busyLooping(Duration.ofSeconds(1)));
         this.requestSink.tryEmitNext(message);
     }
 
@@ -223,7 +220,7 @@ public class ReactorNettyTerminalClient implements TerminalClient {
                             this.requestSink.tryEmitNext(message);
                         } else {
                             if (!this.exchangeQueue.offer(new Exchange(sink, message))) {
-                                sink.error(new RuntimeException("请求队列已达到上限."));
+                                sink.error(new TheRequestQueueHasReachedItsLimitException());
                             }
                         }
                     } catch (Exception e) {

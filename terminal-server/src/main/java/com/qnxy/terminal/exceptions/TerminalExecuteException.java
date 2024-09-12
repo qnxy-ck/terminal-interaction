@@ -1,4 +1,4 @@
-package com.qnxy.terminal;
+package com.qnxy.terminal.exceptions;
 
 import com.qnxy.terminal.api.data.ErrorCode;
 import lombok.Getter;

@@ -1,6 +1,7 @@
 package com.qnxy.terminal.client;
 
 import com.qnxy.terminal.ServerConfiguration;
+import com.qnxy.terminal.exceptions.TheRequestQueueHasReachedItsLimitException;
 import com.qnxy.terminal.message.ClientMessage;
 import com.qnxy.terminal.message.ServerMessage;
 import reactor.core.publisher.Flux;
@@ -22,10 +23,13 @@ public interface TerminalClient {
     void send(ServerMessage message);
 
     /**
-     * 发送带有回应的消息
+     * 发送带有回应的消息, 同步执行
+     * <p>
+     * 如果有同步消息正在执行 将会把此消息加入队列等待执行
      *
-     * @param message 消息内容
+     * @param message 发送消息内容
      * @return 响应内容
+     * @throws TheRequestQueueHasReachedItsLimitException 当队列已满时抛出该异常
      */
     Flux<ClientMessage> exchange(ServerMessage message);
 

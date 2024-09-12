@@ -11,7 +11,10 @@ public class TerminalServer {
 
         final ServerConfiguration configuration = new ServerConfiguration(
                 9900,
-                Duration.ofSeconds(10)
+                Duration.ofSeconds(10),
+                Duration.ofSeconds(5),
+                3,
+                Duration.ofSeconds(3)
         );
 
         new NettyTcpApplicationEngine(configuration).start(true);

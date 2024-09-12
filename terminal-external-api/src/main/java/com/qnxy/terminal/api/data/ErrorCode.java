@@ -9,6 +9,13 @@ import java.util.Optional;
 public enum ErrorCode {
 
     /**
+     * 通讯故障
+     * <p>
+     * 非终端返回消息
+     */
+    COMMUNICATION_FAILURE,
+
+    /**
      * 出货摸块不存在
      */
     MOVE_OUT_GOODS_MODULE_DOES_NOT_EXIST,

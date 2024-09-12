@@ -2,6 +2,7 @@ package com.qnxy.terminal;
 
 import com.qnxy.terminal.api.data.SwipeCardCallbackReq;
 import com.qnxy.terminal.client.TerminalClient;
+import com.qnxy.terminal.exceptions.TerminalExecuteException;
 import com.qnxy.terminal.message.client.AuthorizedMoveOutGoodsReceipt;
 import com.qnxy.terminal.message.client.ErrorMessage;
 import com.qnxy.terminal.message.client.SetupSuccessful;
@@ -14,6 +15,7 @@ import reactor.core.publisher.Mono;
 import java.util.function.Function;
 
 import static com.qnxy.terminal.api.data.SwipeCardCallbackReq.withErrorCode;
+import static com.qnxy.terminal.api.data.SwipeCardCallbackReq.withSuccess;
 
 /**
  * 终端机器调用流程
@@ -35,13 +37,8 @@ public final class CallingFlow {
         return terminalClient.exchange(message)
                 .last()
                 .flatMap(it -> {
-                    if (it instanceof AuthorizedMoveOutGoodsReceipt moveOutGoodsReceipt) {
-                        return Mono.just(SwipeCardCallbackReq.withSuccess(
-                                transactionCode,
-                                moveOutGoodsReceipt.tagsCode(),
-                                moveOutGoodsReceipt.alreadyTakenOut(),
-                                moveOutGoodsReceipt.tagsType()
-                        ));
+                    if (it instanceof AuthorizedMoveOutGoodsReceipt receipt) {
+                        return Mono.just(withSuccess(transactionCode, receipt.tagsCode(), receipt.alreadyTakenOut()));
                     }
 
                     if (it instanceof ErrorMessage errorMessage) {
@@ -49,7 +46,8 @@ public final class CallingFlow {
                     }
 
 
-                    return terminalClient.close(ServerError.UNEXPECTED_MESSAGE_ERROR).then(Mono.empty());
+                    return terminalClient.close(ServerError.UNEXPECTED_MESSAGE_ERROR)
+                            .then(Mono.error(new RuntimeException("授权出货响应异常")));
                 })
                 .flatMap(callback);
     }

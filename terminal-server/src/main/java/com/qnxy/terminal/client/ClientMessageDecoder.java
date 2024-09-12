@@ -6,6 +6,8 @@ import com.qnxy.terminal.message.client.*;
 import io.netty.buffer.ByteBuf;
 
 /**
+ * 终端消息解码器
+ * 
  * @author Qnxy
  */
 public final class ClientMessageDecoder {
@@ -21,7 +23,7 @@ public final class ClientMessageDecoder {
 
     private static ClientMessage decodeBody(ByteBuf body, ClientMessageType messageType) {
         return switch (messageType) {
-            case CONNECT_AUTHENTICATION -> ConnectAuthentication.decode(body);
+            case AUTHORIZATION_APPLICATION -> AuthorizationApplication.decode(body);
             case HEARTBEAT -> Heartbeat.INSTANCE;
             case SETUP_SUCCESSFUL -> SetupSuccessful.INSTANCE;
             case SWIPE_CARD -> SwipeCard.decode(body);

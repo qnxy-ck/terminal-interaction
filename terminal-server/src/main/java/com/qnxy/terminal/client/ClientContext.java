@@ -7,7 +7,7 @@ import java.time.Duration;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * 上下文信息
+ * 终端上下文信息
  *
  * @author Qnxy
  */
@@ -18,6 +18,10 @@ public class ClientContext {
      * 当前终端是否认证
      */
     private final AtomicBoolean authorized;
+
+    /**
+     * 服务器信息
+     */
     private final ServerContext serverContext;
 
     /**

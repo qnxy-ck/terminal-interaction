@@ -7,6 +7,8 @@ import io.netty.buffer.ByteBufAllocator;
 import lombok.ToString;
 
 /**
+ * 最后的完成响应 响应心跳等
+ *
  * @author Qnxy
  */
 @ToString
@@ -20,7 +22,7 @@ public final class Complete implements ServerMessage {
 
     @Override
     public ByteBuf encode(ByteBufAllocator byteBufAllocator) {
-        return this.simpleByteBuf(byteBufAllocator, ServerMessageType.SUCCESSFUL);
+        return this.simpleByteBuf(byteBufAllocator, ServerMessageType.COMPLETE);
     }
 
 }

@@ -7,6 +7,8 @@ import io.netty.buffer.ByteBufAllocator;
 import lombok.RequiredArgsConstructor;
 
 /**
+ * 服务端发出的各种错误类型
+ * 
  * @author Qnxy
  */
 @RequiredArgsConstructor

@@ -9,6 +9,9 @@ import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
 /**
+ * 心跳异步处理器
+ * 收到终端心跳后返回 {@link Complete}
+ * 
  * @author Qnxy
  */
 @Slf4j

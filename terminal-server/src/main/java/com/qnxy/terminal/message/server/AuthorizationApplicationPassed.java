@@ -6,13 +6,15 @@ import io.netty.buffer.ByteBufAllocator;
 
 import java.time.Duration;
 
-import static com.qnxy.terminal.message.ServerMessageType.AUTHORIZATION_SUCCESSFUL;
+import static com.qnxy.terminal.message.ServerMessageType.AUTHORIZATION_APPLICATION_PASSED;
 
 /**
+ * 终端授权申请通过消息
+ * 
  * @param heartbeatInterval 指定终端心跳间隔 (秒)
  * @author Qnxy
  */
-public record AuthorizationPassed(
+public record AuthorizationApplicationPassed(
         Duration heartbeatInterval
 ) implements ServerMessage {
 
@@ -20,7 +22,7 @@ public record AuthorizationPassed(
     public ByteBuf encode(ByteBufAllocator byteBufAllocator) {
         return this.simpleByteBuf(
                 byteBufAllocator,
-                AUTHORIZATION_SUCCESSFUL,
+                AUTHORIZATION_APPLICATION_PASSED,
                 byteBuf -> byteBuf.writeByte(Math.min((int) this.heartbeatInterval.toSeconds(), Byte.MAX_VALUE))
         );
     }

@@ -7,6 +7,8 @@ import io.netty.buffer.ByteBufAllocator;
 import static com.qnxy.terminal.message.ServerMessageType.VOLUME_ADJUSTMENT;
 
 /**
+ * 终端机器音量大小调节
+ * 
  * @author Qnxy
  */
 public record VolumeAdjustment(

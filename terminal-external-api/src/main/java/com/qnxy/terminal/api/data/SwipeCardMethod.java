@@ -7,13 +7,22 @@ import java.util.Arrays;
 import java.util.Optional;
 
 /**
+ * 刷卡方式
+ *
  * @author Qnxy
  */
 @RequiredArgsConstructor
 @Getter
 public enum SwipeCardMethod {
 
+    /**
+     * ID卡识别
+     */
     ID_CARD_READING,
+
+    /**
+     * 普通卡片上的二维码扫描
+     */
     SCAN_QR_CODE_ON_CARD,
     ;
 

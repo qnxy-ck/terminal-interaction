@@ -7,7 +7,9 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /**
- * 终端同步消息处理器
+ * 终端主动同步消息处理器
+ * <p>
+ * 收到多个同步消息时排它处理, 具体描述参考 {@link ProactiveSyncMessage}
  *
  * @author Qnxy
  */
