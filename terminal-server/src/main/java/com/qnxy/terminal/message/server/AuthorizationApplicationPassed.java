@@ -3,6 +3,7 @@ package com.qnxy.terminal.message.server;
 import com.qnxy.terminal.message.ServerMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
+import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 
@@ -19,7 +20,7 @@ public record AuthorizationApplicationPassed(
 ) implements ServerMessage {
 
     @Override
-    public ByteBuf encode(ByteBufAllocator byteBufAllocator) {
+    public Mono<ByteBuf> encode(ByteBufAllocator byteBufAllocator) {
         return this.simpleByteBuf(
                 byteBufAllocator,
                 AUTHORIZATION_APPLICATION_PASSED,

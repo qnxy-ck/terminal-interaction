@@ -4,6 +4,7 @@ import com.qnxy.terminal.external.SwipeCardResp;
 import com.qnxy.terminal.message.ServerMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
+import reactor.core.publisher.Mono;
 
 import static com.qnxy.terminal.message.ServerMessageType.AUTHORIZED_MOVE_OUT_GOODS;
 
@@ -28,7 +29,7 @@ public record AuthorizedMoveOutGoods(
     }
 
     @Override
-    public ByteBuf encode(ByteBufAllocator byteBufAllocator) {
+    public Mono<ByteBuf> encode(ByteBufAllocator byteBufAllocator) {
         return this.simpleByteBuf(
                 byteBufAllocator,
                 AUTHORIZED_MOVE_OUT_GOODS,

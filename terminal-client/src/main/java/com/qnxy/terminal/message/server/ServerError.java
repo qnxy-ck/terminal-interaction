@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import java.util.Arrays;
 
 /**
+ * 服务端发出的各种错误类型
+ *
  * @author Qnxy
  */
 @RequiredArgsConstructor
@@ -41,20 +43,25 @@ public enum ServerError implements ServerMessage {
      * 同步任务进行中
      */
     SYNCHRONIZATION_TASK_IN_PROGRESS,
+
+    /**
+     * 服务器异常
+     */
+    SERVER_EXCEPTION,
+
     ;
 
-
-    public static ServerError decode(ByteBuf buffer) {
-        byte errCode = buffer.readByte();
+    public static ServerMessage decode(ByteBuf buf) {
+        byte b = buf.readByte();
 
         return Arrays.stream(values())
-                .filter(it -> it.ordinal() == errCode)
+                .filter(e -> e.ordinal() == b)
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("未知错误代码: " + errCode));
+                .orElseThrow(() -> new RuntimeException("Unknown Server Error"));
     }
 
     @Override
     public String toString() {
-        return "ServerError." + name();
+        return "ServerError." + this.name();
     }
 }

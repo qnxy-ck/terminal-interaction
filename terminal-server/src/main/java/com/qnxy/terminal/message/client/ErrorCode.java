@@ -12,8 +12,6 @@ public enum ErrorCode {
 
     /**
      * 通讯故障
-     * <p>
-     * 非终端返回消息
      */
     COMMUNICATION_FAILURE,
 

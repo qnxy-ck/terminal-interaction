@@ -78,11 +78,7 @@ public class AuthorizationApplicationProactiveSyncMessageProcessor implements Pr
 
                     return this.waitTerminalSuccessResp(responseMessageFlux, terminalClient, clientContext.getServerContext().serverConfiguration().waitAfterAuthorizationIsPassed())
                             .doOnNext(successful -> {
-                                clientContext.setAuthInfo(
-                                        terminalId,
-                                        authorizationApplication.imei(),
-                                        it.synchronousExecutionMaximumWaitTime()
-                                );
+                                clientContext.setAuthInfo(terminalId, authorizationApplication.imei());
 
                                 // 心跳超时时间为每次心跳间隔的三倍
                                 // 超出该时间将被断开连接

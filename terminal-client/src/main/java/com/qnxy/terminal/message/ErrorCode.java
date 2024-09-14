@@ -1,12 +1,21 @@
-package com.qnxy.terminal.message.client;
+package com.qnxy.terminal.message;
 
 import java.util.Arrays;
 import java.util.Optional;
 
 /**
+ * 终端错误码
+ *
  * @author Qnxy
  */
 public enum ErrorCode {
+
+    /**
+     * 通讯故障
+     * <p>
+     * 非终端返回消息
+     */
+    COMMUNICATION_FAILURE,
 
     /**
      * 出货摸块不存在

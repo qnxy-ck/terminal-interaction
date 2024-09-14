@@ -1,5 +1,7 @@
 package com.qnxy.terminal;
 
+import lombok.SneakyThrows;
+
 import java.time.Duration;
 
 /**
@@ -7,6 +9,7 @@ import java.time.Duration;
  */
 public class TerminalServer {
 
+    @SneakyThrows
     public static void main(String[] args) {
 
         final ServerConfiguration configuration = new ServerConfiguration(
@@ -17,9 +20,8 @@ public class TerminalServer {
                 Duration.ofSeconds(3)
         );
 
-        new NettyTcpApplicationEngine(configuration).start(true);
+        new NettyTcpApplicationEngine(configuration)
+                .start(true);
 
     }
-
-
 }

@@ -208,28 +208,27 @@ public class ReactorNettyTerminalClient implements TerminalClient {
 
     @Override
     public Flux<ClientMessage> exchange(ServerMessage message) {
-        return Flux.<ClientMessage>create(sink -> {
-                    if (!this.isConnected()) {
-                        sink.error(new RuntimeException("连接已关闭, 无法发送消息"));
-                    }
+        return Flux.create(sink -> {
+            if (!this.isConnected()) {
+                sink.error(new RuntimeException("连接已关闭, 无法发送消息"));
+            }
 
-                    try {
-                        this.lock.lock();
-                        if (this.exchangeQueue.isEmpty() && this.exchange == null) {
-                            this.exchangeQueue.offer(new Exchange(sink));
-                            this.requestSink.tryEmitNext(message);
-                        } else {
-                            if (!this.exchangeQueue.offer(new Exchange(sink, message))) {
-                                sink.error(new TheRequestQueueHasReachedItsLimitException());
-                            }
-                        }
-                    } catch (Exception e) {
-                        sink.error(e);
-                    } finally {
-                        this.lock.unlock();
+            try {
+                this.lock.lock();
+                if (this.exchangeQueue.isEmpty() && this.exchange == null) {
+                    this.exchangeQueue.offer(new Exchange(sink));
+                    this.requestSink.tryEmitNext(message);
+                } else {
+                    if (!this.exchangeQueue.offer(new Exchange(sink, message))) {
+                        sink.error(new TheRequestQueueHasReachedItsLimitException());
                     }
-                })
-                .timeout(this.clientContext.getSynchronousExecutionMaximumWaitTime());
+                }
+            } catch (Exception e) {
+                sink.error(e);
+            } finally {
+                this.lock.unlock();
+            }
+        });
     }
 
 
@@ -251,7 +250,7 @@ public class ReactorNettyTerminalClient implements TerminalClient {
 
         boolean emit(ClientMessage message) {
             if (this.sink.isCancelled()) {
-                log.error("调用者已关闭: {}", message);
+                log.error("收到消息但调用者已取消: {}", message);
 
                 return true;
             }

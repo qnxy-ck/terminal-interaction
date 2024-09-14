@@ -2,10 +2,7 @@ package com.qnxy.terminal;
 
 import com.qnxy.terminal.message.ServerMessage;
 import com.qnxy.terminal.message.ServerMessageType;
-import com.qnxy.terminal.message.server.AuthorizationPassed;
-import com.qnxy.terminal.message.server.AuthorizedMoveOutGoods;
-import com.qnxy.terminal.message.server.ServerError;
-import com.qnxy.terminal.message.server.Successful;
+import com.qnxy.terminal.message.server.*;
 import io.netty.buffer.ByteBuf;
 
 /**
@@ -13,24 +10,24 @@ import io.netty.buffer.ByteBuf;
  */
 public class MessageDecoder {
 
+    public static ServerMessage decode(ByteBuf buf) {
 
-    public static ServerMessage decode(ByteBuf byteBuf) {
-        final short instructionCode = byteBuf.readUnsignedByte();
-        final ServerMessageType messageType = ServerMessageType.valueOf((char) instructionCode);
+        short instructionCode = buf.readUnsignedByte();
 
-        return decodeBody(byteBuf, messageType);
+        ServerMessageType serverMessageType = ServerMessageType.fromInstructionCode((char) instructionCode)
+                .orElseThrow(() -> new RuntimeException("未知 server 消息类型: " + instructionCode));
+
+        return decodeBody(serverMessageType, buf);
     }
 
-
-    private static ServerMessage decodeBody(ByteBuf body, ServerMessageType messageType) {
-
-        return switch (messageType) {
-            case AUTHORIZATION_SUCCESSFUL -> AuthorizationPassed.decode(body);
-            case SERVER_ERROR -> ServerError.decode(body);
-            case SUCCESSFUL -> Successful.INSTANCE;
-            case AUTHORIZED_MOVE_OUT_GOODS -> AuthorizedMoveOutGoods.decode(body);
-            default -> throw new IllegalArgumentException("消息类型无效: " + messageType);
+    private static ServerMessage decodeBody(ServerMessageType serverMessageType, ByteBuf buf) {
+        return switch (serverMessageType) {
+            case COMPLETE -> Complete.INSTANCE;
+            case AUTHORIZED_MOVE_OUT_GOODS -> AuthorizedMoveOutGoods.decode(buf);
+            case AUTHORIZATION_APPLICATION_PASSED -> AuthorizationApplicationPassed.decode(buf);
+            case VOLUME_ADJUSTMENT -> VolumeAdjustment.decode(buf);
+            case SERVER_ERROR -> ServerError.decode(buf);
         };
-
     }
+
 }

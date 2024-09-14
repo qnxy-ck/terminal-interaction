@@ -16,7 +16,7 @@ public class DefaultTerminalExternalService implements TerminalExternalService {
     public Mono<AuthorizationInfo> authorize(String imei) {
         return Mono.just(new AuthorizationInfo(
                 1L,
-                Duration.ofMinutes(10),
+                Duration.ofSeconds(50),
                 Duration.ofSeconds(10)
         ));
     }

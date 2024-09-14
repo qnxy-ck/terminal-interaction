@@ -1,23 +1,47 @@
 package com.qnxy.terminal.message;
 
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Arrays;
 
 /**
+ * 客户端消息的类型
+ *
  * @author Qnxy
  */
 @RequiredArgsConstructor
-@Getter
 public enum ClientMessageType {
 
-    CONNECT_AUTHENTICATION('A'),
+    /**
+     * 授权申请
+     */
+    AUTHORIZATION_APPLICATION('A'),
+
+    /**
+     * 心跳
+     */
     HEARTBEAT('P'),
+
+    /**
+     * 授权出货回执信息
+     */
     AUTHORIZED_MOVE_OUT_GOODS_RECEIPT('M'),
+
+    /**
+     * 设置成功消息
+     */
     SETUP_SUCCESSFUL('S'),
+
+    /**
+     * 刷卡消息
+     */
     SWIPE_CARD('c'),
-    ERROR_MESSAGE('E');
+
+    /**
+     * 错误消息
+     */
+    ERROR_MESSAGE('E'),
+    ;
 
 
     private final char instructionCode;
@@ -26,7 +50,7 @@ public enum ClientMessageType {
         return Arrays.stream(values())
                 .filter(m -> m.instructionCode == instructionCode)
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Invalid message type: " + instructionCode));
+                .orElseThrow(() -> new IllegalArgumentException("消息类型无效: " + instructionCode));
     }
 
 }

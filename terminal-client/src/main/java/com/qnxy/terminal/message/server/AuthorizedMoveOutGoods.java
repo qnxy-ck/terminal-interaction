@@ -16,11 +16,11 @@ public record AuthorizedMoveOutGoods(
 ) implements ServerMessage {
 
 
-    public static AuthorizedMoveOutGoods decode(ByteBuf buf) {
-        byte cargoLocation = buf.readByte();
-        boolean readTags = buf.readBoolean();
+    public static AuthorizedMoveOutGoods decode(ByteBuf buffer) {
+
+        byte cargoLocation = buffer.readByte();
+        boolean readTags = buffer.readBoolean();
         return new AuthorizedMoveOutGoods(cargoLocation, readTags);
     }
-
 
 }

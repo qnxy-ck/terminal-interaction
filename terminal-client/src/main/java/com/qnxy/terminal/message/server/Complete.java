@@ -7,12 +7,10 @@ import lombok.ToString;
  * @author Qnxy
  */
 @ToString
-public final class Successful implements ServerMessage {
+public final class Complete implements ServerMessage {
 
-    public static final Successful INSTANCE = new Successful();
+    public static final Complete INSTANCE = new Complete();
 
-    private Successful() {
-
+    private Complete() {
     }
-
 }

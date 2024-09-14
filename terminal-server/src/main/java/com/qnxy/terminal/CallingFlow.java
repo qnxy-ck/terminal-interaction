@@ -2,7 +2,6 @@ package com.qnxy.terminal;
 
 import com.qnxy.terminal.client.TerminalClient;
 import com.qnxy.terminal.exceptions.TerminalExecuteException;
-import com.qnxy.terminal.external.SwipeCardCallbackReq;
 import com.qnxy.terminal.message.client.AuthorizedMoveOutGoodsReceipt;
 import com.qnxy.terminal.message.client.ErrorMessage;
 import com.qnxy.terminal.message.client.SetupSuccessful;
@@ -12,10 +11,7 @@ import com.qnxy.terminal.message.server.VolumeAdjustment;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
-import java.util.function.Function;
-
-import static com.qnxy.terminal.external.SwipeCardCallbackReq.withErrorCode;
-import static com.qnxy.terminal.external.SwipeCardCallbackReq.withSuccess;
+import java.util.Optional;
 
 /**
  * 终端机器调用流程
@@ -25,51 +21,32 @@ import static com.qnxy.terminal.external.SwipeCardCallbackReq.withSuccess;
 @Slf4j
 public final class CallingFlow {
 
-    /**
-     * 授权机器出货
-     *
-     * @param terminalClient  那个终端
-     * @param transactionCode 交易码
-     * @param message         授权信息
-     * @param callback        回调
-     */
-    public static Mono<Void> authorizedMoveOutGoods(TerminalClient terminalClient, long transactionCode, AuthorizedMoveOutGoods message, Function<SwipeCardCallbackReq, Mono<Void>> callback) {
-        return terminalClient.exchange(message)
-                .last()
-                .flatMap(it -> {
-                    if (it instanceof AuthorizedMoveOutGoodsReceipt receipt) {
-                        return Mono.just(withSuccess(transactionCode, receipt.tagsCode(), receipt.alreadyTakenOut()));
-                    }
+    public static Mono<AuthorizedMoveOutGoodsReceipt> authorizedMoveOutGoods(Long terminalId, AuthorizedMoveOutGoods message) {
+        return Mono.defer(() -> {
+            Optional<TerminalClient> clientOptional = ClientManager.findClient(terminalId);
+            if (clientOptional.isEmpty()) {
+                return Mono.error(new IllegalArgumentException("找不到客户端: " + terminalId));
+            }
 
-                    if (it instanceof ErrorMessage errorMessage) {
-                        return Mono.just(withErrorCode(transactionCode, errorMessage.errorCodes()));
-                    }
+            TerminalClient client = clientOptional.get();
+            return client.exchange(message)
+                    .last()
+                    .flatMap(it -> {
+                        if (it instanceof AuthorizedMoveOutGoodsReceipt moveOutGoodsReceipt) {
+                            return Mono.just(moveOutGoodsReceipt);
+                        }
 
+                        if (it instanceof ErrorMessage errorMessage) {
+                            return Mono.error(new TerminalExecuteException(errorMessage.errorCodes()));
+                        }
 
-                    return terminalClient.close(ServerError.UNEXPECTED_MESSAGE_ERROR)
-                            .then(Mono.error(new RuntimeException("授权出货响应异常")));
-                })
-                .flatMap(callback);
+                        return flowStateError(client);
+                    });
+
+        });
+
     }
 
-    /**
-     * 同步授权出货接口
-     */
-    public static Mono<AuthorizedMoveOutGoodsReceipt> authorizedMoveOutGoodsSync(TerminalClient terminalClient, AuthorizedMoveOutGoods message) {
-        return terminalClient.exchange(message)
-                .last()
-                .flatMap(it -> {
-                    if (it instanceof AuthorizedMoveOutGoodsReceipt moveOutGoodsReceipt) {
-                        return Mono.just(moveOutGoodsReceipt);
-                    }
-
-                    if (it instanceof ErrorMessage errorMessage) {
-                        return Mono.error(new TerminalExecuteException(errorMessage.errorCodes()));
-                    }
-
-                    return terminalClient.close(ServerError.UNEXPECTED_MESSAGE_ERROR).then(Mono.empty());
-                });
-    }
 
     /**
      * 音量调节
@@ -91,8 +68,13 @@ public final class CallingFlow {
                         return Mono.just(false);
                     }
 
-                    return terminalClient.close(ServerError.UNEXPECTED_MESSAGE_ERROR).then(Mono.empty());
+                    return flowStateError(terminalClient);
                 });
+    }
+
+    private static <T> Mono<T> flowStateError(TerminalClient terminalClient) {
+        return terminalClient.close(ServerError.UNEXPECTED_MESSAGE_ERROR)
+                .then(Mono.error(new IllegalStateException("终端执行流程返回结果非法, 该客户端已被关闭")));
     }
 
 }

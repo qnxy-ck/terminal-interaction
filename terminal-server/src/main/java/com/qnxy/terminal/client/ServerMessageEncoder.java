@@ -18,15 +18,14 @@ public final class ServerMessageEncoder {
     private final ByteBufAllocator byteBufAllocator;
 
     public Mono<ByteBuf> encode(ServerMessage message) {
-        return Mono.fromSupplier(() -> {
-            final ByteBuf buf = message.encode(this.byteBufAllocator);
-
-            final CompositeByteBuf out = byteBufAllocator.compositeBuffer();
-
-            out.writeShort(buf.readableBytes());
-            out.writeBytes(buf);
-            return out;
-        });
+        return Mono.defer(() -> message.encode(this.byteBufAllocator)
+                .map(it -> {
+                    CompositeByteBuf out = byteBufAllocator.compositeBuffer();
+                    out.writeShort(it.readableBytes());
+                    out.writeBytes(it);
+                    return out;
+                })
+        );
     }
 
 }

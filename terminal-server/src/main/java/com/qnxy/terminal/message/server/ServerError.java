@@ -5,6 +5,7 @@ import com.qnxy.terminal.message.ServerMessageType;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import lombok.RequiredArgsConstructor;
+import reactor.core.publisher.Mono;
 
 /**
  * 服务端发出的各种错误类型
@@ -53,7 +54,7 @@ public enum ServerError implements ServerMessage {
 
 
     @Override
-    public ByteBuf encode(ByteBufAllocator byteBufAllocator) {
+    public Mono<ByteBuf> encode(ByteBufAllocator byteBufAllocator) {
         return this.simpleByteBuf(
                 byteBufAllocator,
                 ServerMessageType.SERVER_ERROR,
